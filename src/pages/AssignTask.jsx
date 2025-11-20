@@ -970,7 +970,6 @@
 //                   />
 //                 </div>
 
-
 //               </div>
 //             </div>
 
@@ -1544,14 +1543,6 @@
 
 // export default AssignTask;
 
-
-
-
-
-
-
-
-
 import { set } from "date-fns";
 import { Loader2Icon, LoaderIcon } from "lucide-react";
 import React, { useEffect, useState } from "react";
@@ -1608,9 +1599,7 @@ function AssignTask() {
   const [userMachineData, setUserMachineData] = useState([]);
   const [AllMachineData, setAllMachineData] = useState([]);
 
-
   const [userSerialData, setUserSerialData] = useState([]);
-
 
   // Maintenance script and sheet details
   const SCRIPT_URL =
@@ -1620,9 +1609,9 @@ function AssignTask() {
   const FOLDER_ID = "1rf1Zd4PpxZZXe4zUWUA4cbNWjI7QjtGm";
 
   // Repair script and sheet details
-  const REPAIR_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwrMqtt_V8Fb6paAhab9rPdCnYxZPo30Op5f8GQjjSgZIUa7nKCQD0kztUOkO8nVMrxqg/exec";
+  const REPAIR_SCRIPT_URL =
+    "https://script.google.com/macros/s/AKfycbwrMqtt_V8Fb6paAhab9rPdCnYxZPo30Op5f8GQjjSgZIUa7nKCQD0kztUOkO8nVMrxqg/exec";
   const REPAIR_SHEET_ID = "1pcW63NQRkNVieiRyhOb7QFSu6rODIV7k_Ct-8VMatnY";
-
 
   // Fetch working days calendar data
   const fetchWorkingDaysCalendar = async () => {
@@ -1726,7 +1715,6 @@ function AssignTask() {
       );
       const result = await res.json();
 
-
       if (result.success && result.table) {
         const headers = result.table.cols.map((col) => col.label); // Extract headers
         const rows = result.table.rows;
@@ -1753,7 +1741,6 @@ function AssignTask() {
   };
 
   const fetchUserMachineData = async () => {
-
     if (!user?.username) {
       return;
     }
@@ -1799,8 +1786,9 @@ function AssignTask() {
       }
 
       if (rows.length > 0) {
-
-        const allDoerNames = rows.map((row) => row["Doer Name"]).filter(Boolean);
+        const allDoerNames = rows
+          .map((row) => row["Doer Name"])
+          .filter(Boolean);
         const uniqueDoerNames = [...new Set(allDoerNames)];
 
         const userRows = rows
@@ -1818,7 +1806,6 @@ function AssignTask() {
             "Serial No": row["Serial No"],
           }));
 
-
         setUserMachineData(userRows);
         setAllMachineData(rows);
       }
@@ -1829,15 +1816,11 @@ function AssignTask() {
     }
   };
 
-
-
   useEffect(() => {
-
     if (user?.username) {
       fetchUserMachineData();
     }
   }, [user]);
-
 
   const fetchMasterSheetData = async () => {
     const SHEET_NAME = "Master";
@@ -1913,7 +1896,14 @@ function AssignTask() {
           "Half Yearly",
         ];
       } else if (diffInDays >= 90) {
-        frequencies = ["one-time", "Daily", "Weekly", "15 Days", "Monthly", "Quarterly"];
+        frequencies = [
+          "one-time",
+          "Daily",
+          "Weekly",
+          "15 Days",
+          "Monthly",
+          "Quarterly",
+        ];
       } else if (diffInDays >= 30) {
         frequencies = ["one-time", "Daily", "Weekly", "15 Days", "Monthly"];
       } else if (diffInDays >= 15) {
@@ -1936,7 +1926,6 @@ function AssignTask() {
       setSelectedDoerName(user.name);
     }
   }, [user]);
-
 
   useEffect(() => {
     if (user?.department) {
@@ -2028,7 +2017,6 @@ function AssignTask() {
       const jsonEnd = text.lastIndexOf("}");
       const jsonString = text.substring(jsonStart, jsonEnd + 1);
       const data = JSON.parse(jsonString);
-
 
       if (!data.table || !data.table.rows) {
         return [];
@@ -2182,11 +2170,12 @@ function AssignTask() {
 
     return new Promise((resolve, reject) => {
       reader.onload = async () => {
-        const base64Data = reader.result.split(',')[1]; // Get base64 data without prefix
+        const base64Data = reader.result.split(",")[1]; // Get base64 data without prefix
 
         try {
           // Use repair script URL for image upload for repair tasks
-          const uploadScriptUrl = selectedTaskType === "Repair" ? REPAIR_SCRIPT_URL : SCRIPT_URL;
+          const uploadScriptUrl =
+            selectedTaskType === "Repair" ? REPAIR_SCRIPT_URL : SCRIPT_URL;
 
           const response = await fetch(uploadScriptUrl, {
             method: "POST",
@@ -2232,15 +2221,20 @@ function AssignTask() {
       setLoaderSubmit(true);
 
       // Set the script URL and sheet details based on task type
-      const scriptUrl = selectedTaskType === "Repair" ? REPAIR_SCRIPT_URL : SCRIPT_URL;
-      const sheetId = selectedTaskType === "Repair" ? REPAIR_SHEET_ID : SHEET_Id;
-      const sheetName = selectedTaskType === "Repair" ? "Repair System" : "Maitenance Task Assign";
+      const scriptUrl =
+        selectedTaskType === "Repair" ? REPAIR_SCRIPT_URL : SCRIPT_URL;
+      const sheetId =
+        selectedTaskType === "Repair" ? REPAIR_SHEET_ID : SHEET_Id;
+      const sheetName =
+        selectedTaskType === "Repair"
+          ? "Repair System"
+          : "Maitenance Task Assign";
 
       // Prepare payload for Google Apps Script
       const payload = {
         action: "insert1",
         sheetName: sheetName,
-        sheetId: sheetId
+        sheetId: sheetId,
       };
 
       if (selectedTaskType === "Repair") {
@@ -2267,10 +2261,10 @@ function AssignTask() {
           "Require Attachment": requireAttachment ? "Yes" : "No",
           "Task Start Date": `${startDate} ${startTime}:00`,
           "Task Ending Date": `${endTaskDate} ${endTime}:00`,
-          "Priority": selectedPriority,
-          "Department": machineArea,
-          "Location": temperature,
-          "Image Link": imageUrl
+          Priority: selectedPriority,
+          Department: machineArea,
+          Location: temperature,
+          "Image Link": imageUrl,
         });
       } else {
         // Maintenance Task handling (keep existing logic)
@@ -2280,15 +2274,16 @@ function AssignTask() {
         }
 
         // Get all maintenance tasks and extract the highest number
-        const maintTasks = taskList.filter(task =>
-          task["Task No"] &&
-          typeof task["Task No"] === 'string' &&
-          task["Task No"].startsWith("TM-")
+        const maintTasks = taskList.filter(
+          (task) =>
+            task["Task No"] &&
+            typeof task["Task No"] === "string" &&
+            task["Task No"].startsWith("TM-")
         );
 
         let lastTaskNo = 0;
         if (maintTasks.length > 0) {
-          const taskNumbers = maintTasks.map(task => {
+          const taskNumbers = maintTasks.map((task) => {
             const numPart = task["Task No"].split("TM-")[1];
             return parseInt(numPart) || 0;
           });
@@ -2311,13 +2306,13 @@ function AssignTask() {
             "Machine Area": machineArea,
             "Part Name": partName,
             "Need Sound Test": needSoundTask,
-            "Temperature": temperature,
+            Temperature: temperature,
             "Enable Reminders": enableReminder ? "Yes" : "No",
             "Require Attachment": requireAttachment ? "Yes" : "No",
             "Task Start Date": `${task.dueDate.split(" ")[0]} ${startTime}:00`,
-            "Frequency": frequency,
-            "Description": description,
-            "Priority": selectedPriority,
+            Frequency: frequency,
+            Description: description,
+            Priority: selectedPriority,
           }))
         );
       }
@@ -2369,7 +2364,6 @@ function AssignTask() {
       setLoaderSubmit(false);
     }
   };
-
 
   return (
     <div className="p-2">
@@ -2534,20 +2528,19 @@ function AssignTask() {
                             )}
                             {/* Show all other names from master sheet */}
                             {doerName
-                              .filter(item => item && item !== user?.name)
+                              .filter((item) => item && item !== user?.name)
                               .map((item, index) => (
                                 <option key={index} value={item}>
                                   {item}
                                 </option>
-                              ))
-                            }
+                              ))}
                           </>
                         )}
                       </datalist>
                     </div>
 
                     {/* Task Temperature */}
-                    <div>
+                    {/* <div>
                       <label
                         htmlFor="temperature"
                         className="block text-sm font-medium text-gray-700 mb-1"
@@ -2563,7 +2556,7 @@ function AssignTask() {
                         <option value="Yes">Yes</option>
                         <option value="No">No</option>
                       </select>
-                    </div>
+                    </div> */}
                   </div>
 
                   {/* right */}
@@ -2634,7 +2627,7 @@ function AssignTask() {
                       />
                     </div>
                     {/* Task Type */}
-                    <div>
+                    {/* <div>
                       <label
                         htmlFor="needSoundTest"
                         className="block text-sm font-medium text-gray-700 mb-1"
@@ -2650,7 +2643,7 @@ function AssignTask() {
                         <option value="Yes">Yes</option>
                         <option value="No">No</option>
                       </select>
-                    </div>
+                    </div> */}
 
                     {/* Priority */}
                     <div>
@@ -2766,8 +2759,9 @@ function AssignTask() {
                   type="button"
                   disabled={loaderWorkingDayData}
                   onClick={generateTasks}
-                  className={`w-full flex items-center justify-center gap-2 mb-4 px-4 py-2 text-sm bg-blue-100 border border-blue-400 text-blue-700 rounded hover:bg-blue-200 ${loaderWorkingDayData ? "opacity-50 cursor-not-allowed" : ""
-                    }`}
+                  className={`w-full flex items-center justify-center gap-2 mb-4 px-4 py-2 text-sm bg-blue-100 border border-blue-400 text-blue-700 rounded hover:bg-blue-200 ${
+                    loaderWorkingDayData ? "opacity-50 cursor-not-allowed" : ""
+                  }`}
                 >
                   {loaderWorkingDayData && (
                     <LoaderIcon className="animate-spin w-4 h-4" />
@@ -2820,12 +2814,14 @@ function AssignTask() {
                       </div>
                       <div
                         onClick={() => setEnableReminder((prev) => !prev)}
-                        className={`w-11 h-6 rounded-full relative cursor-pointer transition-colors ${enableReminder ? "bg-blue-600" : "bg-gray-200"
-                          }`}
+                        className={`w-11 h-6 rounded-full relative cursor-pointer transition-colors ${
+                          enableReminder ? "bg-blue-600" : "bg-gray-200"
+                        }`}
                       >
                         <div
-                          className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${enableReminder ? "translate-x-5" : "translate-x-0"
-                            }`}
+                          className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${
+                            enableReminder ? "translate-x-5" : "translate-x-0"
+                          }`}
                         ></div>
                       </div>
                     </div>
@@ -2841,14 +2837,16 @@ function AssignTask() {
                       </div>
                       <div
                         onClick={() => setRequireAttachment((prev) => !prev)}
-                        className={`w-11 h-6 rounded-full relative cursor-pointer transition-colors ${requireAttachment ? "bg-blue-600" : "bg-gray-200"
-                          }`}
+                        className={`w-11 h-6 rounded-full relative cursor-pointer transition-colors ${
+                          requireAttachment ? "bg-blue-600" : "bg-gray-200"
+                        }`}
                       >
                         <div
-                          className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${requireAttachment
-                            ? "translate-x-5"
-                            : "translate-x-0"
-                            }`}
+                          className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${
+                            requireAttachment
+                              ? "translate-x-5"
+                              : "translate-x-0"
+                          }`}
                         ></div>
                       </div>
                     </div>
@@ -2859,8 +2857,9 @@ function AssignTask() {
                   <button
                     type="submit"
                     disabled={loaderSubmit}
-                    className={`w-full flex items-center justify-center gap-2 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${loaderSubmit ? "opacity-50 cursor-not-allowed" : ""
-                      }`}
+                    className={`w-full flex items-center justify-center gap-2 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                      loaderSubmit ? "opacity-50 cursor-not-allowed" : ""
+                    }`}
                   >
                     {loaderSubmit && (
                       <LoaderIcon className="animate-spin w-4 h-4" />
@@ -2894,36 +2893,61 @@ function AssignTask() {
                           id="machineName"
                           value={
                             selectedMachine
-                              ? { label: selectedMachine, value: selectedMachine }
+                              ? {
+                                  label: selectedMachine,
+                                  value: selectedMachine,
+                                }
                               : null
                           }
+                          // onChange={(option) => {
+                          //   const selected = option?.value || "";
+                          //   setSelectedMachine(selected);
+
+                          //   // Filter serial numbers based on selected machine
+                          //   const dataSource = user?.role === "admin" ? AllMachineData : userMachineData;
+
+                          //   const serials = dataSource
+                          //     .filter((item) => item["Machine Name"] === selected)
+                          //     .map((item) => item["Serial No"])
+                          //     .filter(Boolean);
+
+                          //   setFilteredSerials([...new Set(serials)]);
+                          // }}
+
                           onChange={(option) => {
                             const selected = option?.value || "";
                             setSelectedMachine(selected);
-
-                            // Filter serial numbers based on selected machine
-                            const dataSource = user?.role === "admin" ? AllMachineData : userMachineData;
-
-                            const serials = dataSource
-                              .filter((item) => item["Machine Name"] === selected)
+                            // Change this line:
+                            const serials = sheetData // Use sheetData instead of dataSource
+                              .filter(
+                                (item) => item["Machine Name"] === selected
+                              )
                               .map((item) => item["Serial No"])
                               .filter(Boolean);
-
                             setFilteredSerials([...new Set(serials)]);
                           }}
-                          options={
-                            (user?.role === "admin"
-                              ? AllMachineData
-                              : userMachineData
-                            )
-                              .map((item) => item["Machine Name"])
-                              .filter(Boolean)
-                              .filter((v, i, arr) => arr.indexOf(v) === i) // Get unique values
-                              .map((machineName) => ({
-                                label: machineName,
-                                value: machineName,
-                              }))
-                          }
+                          // options={
+                          //   (user?.role === "admin"
+                          //     ? AllMachineData
+                          //     : userMachineData
+                          //   )
+                          //     .map((item) => item["Machine Name"])
+                          //     .filter(Boolean)
+                          //     .filter((v, i, arr) => arr.indexOf(v) === i) // Get unique values
+                          //     .map((machineName) => ({
+                          //       label: machineName,
+                          //       value: machineName,
+                          //     }))
+                          // }
+
+                          options={sheetData
+                            .map((item) => item["Machine Name"])
+                            .filter(Boolean)
+                            .filter((v, i, arr) => arr.indexOf(v) === i)
+                            .map((machineName) => ({
+                              label: machineName,
+                              value: machineName,
+                            }))}
                           placeholder="Select Machine..."
                           isClearable
                           isSearchable
@@ -2932,13 +2956,13 @@ function AssignTask() {
                       )}
                     </div>
 
-
-
-
                     {/* Serial No Dropdown */}
                     {selectedMachine && !loaderSheetData && (
                       <div className="mt-4">
-                        <label htmlFor="serialNo" className="block text-sm font-medium text-gray-700 mb-1">
+                        <label
+                          htmlFor="serialNo"
+                          className="block text-sm font-medium text-gray-700 mb-1"
+                        >
                           Serial Number
                         </label>
                         <select
@@ -2958,7 +2982,10 @@ function AssignTask() {
 
                     {/* Machine Part Name */}
                     <div>
-                      <label htmlFor="partName" className="block text-sm font-medium text-gray-700 mb-1">
+                      <label
+                        htmlFor="partName"
+                        className="block text-sm font-medium text-gray-700 mb-1"
+                      >
                         Machine Part Name
                       </label>
                       <input
@@ -2973,7 +3000,10 @@ function AssignTask() {
 
                     {/* Given By */}
                     <div>
-                      <label htmlFor="givenBy" className="block text-sm font-medium text-gray-700 mb-1">
+                      <label
+                        htmlFor="givenBy"
+                        className="block text-sm font-medium text-gray-700 mb-1"
+                      >
                         Given By
                       </label>
                       <select
@@ -3041,7 +3071,9 @@ function AssignTask() {
                             id="doerNameRepair"
                             list="doerNameListRepair"
                             value={selectedDoerName}
-                            onChange={(e) => setSelectedDoerName(e.target.value)}
+                            onChange={(e) =>
+                              setSelectedDoerName(e.target.value)
+                            }
                             className="w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             placeholder="Select or type new name"
                           />
@@ -3061,7 +3093,6 @@ function AssignTask() {
                         </>
                       )}
                     </div>
-
 
                     {/* Department */}
                     {/* Department */}
@@ -3084,7 +3115,10 @@ function AssignTask() {
 
                     {/* Location */}
                     <div>
-                      <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-1">
+                      <label
+                        htmlFor="location"
+                        className="block text-sm font-medium text-gray-700 mb-1"
+                      >
                         Location
                       </label>
                       <input
@@ -3099,7 +3133,10 @@ function AssignTask() {
 
                     {/* Priority */}
                     <div>
-                      <label htmlFor="priority" className="block text-sm font-medium text-gray-700 mb-1">
+                      <label
+                        htmlFor="priority"
+                        className="block text-sm font-medium text-gray-700 mb-1"
+                      >
                         Priority
                       </label>
                       <select
@@ -3129,7 +3166,10 @@ function AssignTask() {
 
                 {/* Problem With Machine */}
                 <div>
-                  <label htmlFor="machineProblem" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label
+                    htmlFor="machineProblem"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     Problem With Machine
                   </label>
                   <textarea
@@ -3145,7 +3185,10 @@ function AssignTask() {
                 {/* Start & End Dates */}
                 <div className="flex flex-col md:flex-row md:space-x-10 space-y-4 md:space-y-0">
                   <div>
-                    <label htmlFor="startDate" className="block text-sm font-medium text-gray-700">
+                    <label
+                      htmlFor="startDate"
+                      className="block text-sm font-medium text-gray-700"
+                    >
                       Task Start Date
                     </label>
                     <input
@@ -3158,7 +3201,10 @@ function AssignTask() {
                   </div>
 
                   <div>
-                    <label htmlFor="startTime" className="block text-sm font-medium text-gray-700">
+                    <label
+                      htmlFor="startTime"
+                      className="block text-sm font-medium text-gray-700"
+                    >
                       Task Start Time
                     </label>
                     <input
@@ -3171,7 +3217,10 @@ function AssignTask() {
                   </div>
 
                   <div>
-                    <label htmlFor="endDate" className="block text-sm font-medium text-gray-700">
+                    <label
+                      htmlFor="endDate"
+                      className="block text-sm font-medium text-gray-700"
+                    >
                       Task End Date
                     </label>
                     <input
@@ -3184,7 +3233,10 @@ function AssignTask() {
                   </div>
 
                   <div>
-                    <label htmlFor="endTime" className="block text-sm font-medium text-gray-700">
+                    <label
+                      htmlFor="endTime"
+                      className="block text-sm font-medium text-gray-700"
+                    >
                       Task End Time
                     </label>
                     <input
@@ -3197,41 +3249,56 @@ function AssignTask() {
                   </div>
                 </div>
 
-
                 {/* Additional Options */}
                 <div className="w-full pt-6">
-                  <h1 className="text-[1.4rem] text-blue-700 mb-5">Additional Option</h1>
+                  <h1 className="text-[1.4rem] text-blue-700 mb-5">
+                    Additional Option
+                  </h1>
                   <div className="space-y-5">
                     <div className="flex justify-between">
                       <div>
-                        <h1 className="text-[1.2rem] text-blue-600">Enable Reminder</h1>
-                        <h1 className="text-[1rem] text-blue-500">Send reminders before task due date</h1>
+                        <h1 className="text-[1.2rem] text-blue-600">
+                          Enable Reminder
+                        </h1>
+                        <h1 className="text-[1rem] text-blue-500">
+                          Send reminders before task due date
+                        </h1>
                       </div>
                       <div
                         onClick={() => setEnableReminder((prev) => !prev)}
-                        className={`w-11 h-6 rounded-full relative cursor-pointer transition-colors ${enableReminder ? "bg-blue-600" : "bg-gray-200"
-                          }`}
+                        className={`w-11 h-6 rounded-full relative cursor-pointer transition-colors ${
+                          enableReminder ? "bg-blue-600" : "bg-gray-200"
+                        }`}
                       >
                         <div
-                          className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${enableReminder ? "translate-x-5" : "translate-x-0"
-                            }`}
+                          className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${
+                            enableReminder ? "translate-x-5" : "translate-x-0"
+                          }`}
                         ></div>
                       </div>
                     </div>
 
                     <div className="flex justify-between">
                       <div>
-                        <h1 className="text-[1.2rem] text-blue-600">Require Attachment</h1>
-                        <h1 className="text-[1rem] text-blue-500">User must upload a file when completing task</h1>
+                        <h1 className="text-[1.2rem] text-blue-600">
+                          Require Attachment
+                        </h1>
+                        <h1 className="text-[1rem] text-blue-500">
+                          User must upload a file when completing task
+                        </h1>
                       </div>
                       <div
                         onClick={() => setRequireAttachment((prev) => !prev)}
-                        className={`w-11 h-6 rounded-full relative cursor-pointer transition-colors ${requireAttachment ? "bg-blue-600" : "bg-gray-200"
-                          }`}
+                        className={`w-11 h-6 rounded-full relative cursor-pointer transition-colors ${
+                          requireAttachment ? "bg-blue-600" : "bg-gray-200"
+                        }`}
                       >
                         <div
-                          className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${requireAttachment ? "translate-x-5" : "translate-x-0"
-                            }`}
+                          className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${
+                            requireAttachment
+                              ? "translate-x-5"
+                              : "translate-x-0"
+                          }`}
                         ></div>
                       </div>
                     </div>
@@ -3240,7 +3307,10 @@ function AssignTask() {
 
                 {/* Image Upload */}
                 <div className="pt-4">
-                  <label htmlFor="machineImage" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label
+                    htmlFor="machineImage"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     Upload Machine Image (Optional)
                   </label>
                   <input
@@ -3257,16 +3327,18 @@ function AssignTask() {
                   <button
                     type="submit"
                     disabled={loaderSubmit}
-                    className={`w-full flex items-center justify-center gap-2 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${loaderSubmit ? "opacity-50 cursor-not-allowed" : ""
-                      }`}
+                    className={`w-full flex items-center justify-center gap-2 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                      loaderSubmit ? "opacity-50 cursor-not-allowed" : ""
+                    }`}
                   >
-                    {loaderSubmit && <LoaderIcon className="animate-spin w-4 h-4" />}
+                    {loaderSubmit && (
+                      <LoaderIcon className="animate-spin w-4 h-4" />
+                    )}
                     {loaderSubmit ? "Assigning..." : "Assign Task"}
                   </button>
                 </div>
               </>
             )}
-
           </form>
         </div>
       </div>
