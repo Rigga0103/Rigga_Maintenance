@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import {
   BarChart,
@@ -32,7 +31,6 @@ import useAuthStore from "../store/authStore";
 
 const Dashboard = () => {
   const { user } = useAuthStore();
-  console.log("user from dashboard", user);
   const [sheetDate, setSheetData] = useState([]);
 
   const SCRIPT_URL =
@@ -59,13 +57,6 @@ const Dashboard = () => {
   const [allMachineData, setAllMachineData] = useState([]);
   const [loaderUserMachineData, setLoaderUserMachineData] = useState(false);
 
-
-  // console.log("sheetData", sheetDate);
-  console.log("repairCompletedTasks", repairCompletedTasks);
-  console.log("maintenanceCompletedTasks", maintenanceCompletedTasks);
-  // console.log("totalMaintenanceTasksCompleted", totalMaintenanceTasksCompleted);
-  // console.log("totalRepairTasksCompleted", totalRepairTasksCompleted);
-
   const fetchSheetData = async () => {
     try {
       setLoaderSheetData(true);
@@ -73,9 +64,6 @@ const Dashboard = () => {
         `${SCRIPT_URL}?sheetId=${SHEET_Id}&sheet=${SHEET_NAME}`
       );
       const result = await res.json();
-      console.log("result", result);
-
-      // console.log("data", result);
 
       if (result.success && result.table) {
         const headers = result.table.cols.map((col) => col.label); // Extract headers
@@ -112,35 +100,38 @@ const Dashboard = () => {
       try {
         const [maintenanceRes, repairRes] = await Promise.all([
           axios.get(
-            `${SCRIPT_URL}?sheetId=${SHEET_Id}&sheet=Maitenance%20Task%20Assign`
+            `${SCRIPT_URL}?sheetId=${SHEET_Id}&sheet=Maitenance%20Task%20Assign&pageSize=100000000000000`
           ),
           axios.get(
-            `${SCRIPT_URL}?sheetId=${SHEET_Id}&sheet=Repair%20Task%20Assign`
+            `${SCRIPT_URL}?sheetId=${SHEET_Id}&sheet=Repair%20Task%20Assign&pageSize=100000000000000`
           ),
         ]);
 
         const formattedMaintenance = formatSheetData(maintenanceRes.data.table);
         const formattedRepair = formatSheetData(repairRes.data.table);
 
-
         // ✅ यहाँ filter logic लगाया है
         let filteredMaintenance = formattedMaintenance;
         let filteredRepair = formattedRepair;
 
         if (user?.role !== "admin") {
+          console.log("Ram ram");
           const currentUserName = user?.name?.trim().toLowerCase();
 
           filteredMaintenance = formattedMaintenance.filter(
             (task) =>
-              task["Doer Name"]?.toString().trim().toLowerCase() === currentUserName
+              task["Doer Name"]?.toString().trim().toLowerCase() ===
+              currentUserName
           );
 
           filteredRepair = formattedRepair.filter(
             (task) =>
-              task["Doer Name"]?.toString().trim().toLowerCase() === currentUserName
+              task["Doer Name"]?.toString().trim().toLowerCase() ===
+              currentUserName
           );
         }
 
+        console.log("filteredMaintenance", filteredMaintenance);
 
         setMaintenanceTasks(filteredMaintenance);
         setRepairTasks(filteredRepair);
@@ -162,13 +153,21 @@ const Dashboard = () => {
         const today = new Date();
         const maintenanceOverdue = filteredMaintenance.filter((task) => {
           const taskStartDate = new Date(task["Task Start Date"]);
-          return task["Task Start Date"] && !task["Actual Date"] && taskStartDate < today;
+          return (
+            task["Task Start Date"] &&
+            !task["Actual Date"] &&
+            taskStartDate < today
+          );
         }).length;
         setTotalMaintenanceTasksOverdue(maintenanceOverdue);
 
         const repairOverdue = filteredRepair.filter((task) => {
           const taskStartDate = new Date(task["Task Start Date"]);
-          return task["Task Start Date"] && !task["Actual Date"] && taskStartDate < today;
+          return (
+            task["Task Start Date"] &&
+            !task["Actual Date"] &&
+            taskStartDate < today
+          );
         }).length;
         setTotalRepairTasksOverdue(repairOverdue);
       } catch (error) {
@@ -204,12 +203,14 @@ const Dashboard = () => {
     const maintenanceCostsByMachine = {};
 
     maintenanceCompletedTasks.forEach((task) => {
-      if (task["Serial No"] &&
+      if (
+        task["Serial No"] &&
         task["Maintenace Cost"] &&
         task["Task Start Date"] &&
         task["Actual Date"] &&
         task["Task Start Date"] !== "" &&
-        task["Actual Date"] !== "") {
+        task["Actual Date"] !== ""
+      ) {
         const machineName = task["Serial No"];
         const maintenanceCost = parseFloat(task["Maintenace Cost"]) || 0;
 
@@ -228,8 +229,6 @@ const Dashboard = () => {
   };
 
   const maintenanceCostData = getMaintenanceCostData();
-  console.log("maintenanceCostData", maintenanceCostData);
-  // console.log("repairVsPurchaseData", repairVsPurchaseData);
 
   // First, create a map to accumulate costs by department
   const departmentCostMap = {};
@@ -254,8 +253,6 @@ const Dashboard = () => {
     })
   );
 
-  // console.log('departmentCostData', departmentCostData);
-
   // Initialize an object to store counts for each frequency type
   // Replace the existing frequencyCounts section with this:
   const frequencyCounts = {
@@ -271,7 +268,11 @@ const Dashboard = () => {
   // Count the occurrences - add null checks
   maintenanceCompletedTasks.forEach((task) => {
     const frequency = task.Frequency;
-    if (frequency && frequency !== "" && frequencyCounts.hasOwnProperty(frequency)) {
+    if (
+      frequency &&
+      frequency !== "" &&
+      frequencyCounts.hasOwnProperty(frequency)
+    ) {
       frequencyCounts[frequency]++;
     }
   });
@@ -288,134 +289,111 @@ const Dashboard = () => {
 
   const totalCost = totalMaintenanceCost; // Only maintenance cost to match the cards
 
-
-
- const fetchUserMachineData = async () => {
-  console.log("=== fetchUserMachineData CALLED ===");
-
-  if (!user?.username) {
-    console.log("No username found:", user);
-    return;
-  }
-
-  try {
-    setLoaderUserMachineData(true);
-    console.log("Fetching data for username:", user.username);
-
-    const SHEET_NAME = "Maitenance Task Assign";
-
-    const res = await fetch(
-      `${SCRIPT_URL}?action=getRawData&sheetId=${SHEET_Id}&sheet=${SHEET_NAME}&pageSize=50000`
-    );
-
-    const result = await res.json();
-    console.log("fetchUserMachineData API result:", result);
-
-    let rows = [];
-    let headers = [];
-
-    if (result.success && result.table) {
-      headers = result.table.cols.map((col) => col.label);
-      rows = result.table.rows.map((rowObj) => {
-        const row = rowObj.c;
-        const rowData = {};
-        row.forEach((cell, i) => {
-          rowData[headers[i]] = cell?.v || "";
-        });
-        return rowData;
-      });
-    } else if (result.success && result.rows && result.headers) {
-      headers = result.headers;
-      rows = result.rows.map((rowArr) => {
-        const rowData = {};
-        headers.forEach((header, i) => {
-          rowData[header] = rowArr[i] || "";
-        });
-        return rowData;
-      });
-    } else {
-      console.error("fetchUserMachineData API failed:", result);
+  const fetchUserMachineData = async () => {
+    if (!user?.username) {
+      return;
     }
 
-    if (rows.length > 0) {
-      console.log("fetchUserMachineData Headers:", headers);
-      console.log("fetchUserMachineData Total rows:", rows.length);
-      console.log("Looking for Doer Name:", user.username);
+    try {
+      setLoaderUserMachineData(true);
 
-      // 🔹 Debug: Show ALL Machine Names
-      const allMachineNames = rows.map((r) => r["Machine Name"]).filter(Boolean);
-      console.log("All Machine Names (raw):", allMachineNames);
-      console.log("Total Machine Names count:", allMachineNames.length);
+      const SHEET_NAME = "Maitenance Task Assign";
 
-      // 🔹 Debug: Unique Machine Names
-      const uniqueMachineNames = [...new Set(allMachineNames)];
-      console.log("Unique Machine Names:", uniqueMachineNames);
-      console.log("Unique Machine Count:", uniqueMachineNames.length);
+      const res = await fetch(
+        `${SCRIPT_URL}?action=getRawData&sheetId=${SHEET_Id}&sheet=${SHEET_NAME}&pageSize=50000`
+      );
 
-      const allDoerNames = rows.map((row) => row["Doer Name"]).filter(Boolean);
-      const uniqueDoerNames = [...new Set(allDoerNames)];
-      console.log("All unique Doer Names in sheet:", uniqueDoerNames);
+      const result = await res.json();
 
-      const userRows = rows
-        .filter((row) => {
-          const doerName = row["Doer Name"]?.toString().trim();
-          const trimmedUserName = user.username?.toString().trim();
-          return (
-            doerName &&
-            (doerName === trimmedUserName ||
-              doerName.toLowerCase() === trimmedUserName.toLowerCase())
-          );
-        })
-        .map((row) => ({
-          "Machine Name": row["Machine Name"],
-          "Serial No": row["Serial No"],
-        }));
+      let rows = [];
+      let headers = [];
 
-      console.log(`Found ${userRows.length} rows for user ${user.username}`);
-      console.log("User rows:", userRows);
+      if (result.success && result.table) {
+        headers = result.table.cols.map((col) => col.label);
+        rows = result.table.rows.map((rowObj) => {
+          const row = rowObj.c;
+          const rowData = {};
+          row.forEach((cell, i) => {
+            rowData[headers[i]] = cell?.v || "";
+          });
+          return rowData;
+        });
+      } else if (result.success && result.rows && result.headers) {
+        headers = result.headers;
+        rows = result.rows.map((rowArr) => {
+          const rowData = {};
+          headers.forEach((header, i) => {
+            rowData[header] = rowArr[i] || "";
+          });
+          return rowData;
+        });
+      } else {
+        console.error("fetchUserMachineData API failed:", result);
+      }
 
-      // 🔹 Debug: User-specific machine names
-      const userMachineNames = userRows.map((r) => r["Machine Name"]).filter(Boolean);
-      const uniqueUserMachines = [...new Set(userMachineNames)];
-      console.log("User Machine Names:", userMachineNames);
-      console.log("Unique User Machines:", uniqueUserMachines);
+      if (rows.length > 0) {
+        // 🔹 Debug: Show ALL Machine Names
+        const allMachineNames = rows
+          .map((r) => r["Machine Name"])
+          .filter(Boolean);
 
-      setUserMachineData(userRows);
-      setAllMachineData(rows);
+        // 🔹 Debug: Unique Machine Names
+        const uniqueMachineNames = [...new Set(allMachineNames)];
+
+        const allDoerNames = rows
+          .map((row) => row["Doer Name"])
+          .filter(Boolean);
+        const uniqueDoerNames = [...new Set(allDoerNames)];
+
+        const userRows = rows
+          .filter((row) => {
+            const doerName = row["Doer Name"]?.toString().trim();
+            const trimmedUserName = user.username?.toString().trim();
+            return (
+              doerName &&
+              (doerName === trimmedUserName ||
+                doerName.toLowerCase() === trimmedUserName.toLowerCase())
+            );
+          })
+          .map((row) => ({
+            "Machine Name": row["Machine Name"],
+            "Serial No": row["Serial No"],
+          }));
+
+        // 🔹 Debug: User-specific machine names
+        const userMachineNames = userRows
+          .map((r) => r["Machine Name"])
+          .filter(Boolean);
+        const uniqueUserMachines = [...new Set(userMachineNames)];
+
+        setUserMachineData(userRows);
+        setAllMachineData(rows);
+      }
+    } catch (error) {
+      console.error("Failed to fetch user machine data", error);
+    } finally {
+      setLoaderUserMachineData(false);
     }
-  } catch (error) {
-    console.error("Failed to fetch user machine data", error);
-  } finally {
-    setLoaderUserMachineData(false);
-  }
-};
-
+  };
 
   const getUniqueMachinesCount = (data) => {
     // Machine Name या Serial No से unique count कर सकते हैं
-    const unique = new Set(data.map((item) => item["Serial No"] || item["Machine Name"]));
+    const unique = new Set(
+      data.map((item) => item["Serial No"] || item["Machine Name"])
+    );
     return unique.size;
   };
 
-  
-
-
   useEffect(() => {
-    console.log("User changed:", user);
-    console.log("User username:", user?.username);
-    console.log("Will call fetchUserMachineData:", !!user?.username);
-
     if (user?.username) {
       fetchUserMachineData();
     }
   }, [user]);
 
-
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-800">Dashboard</h1>
-
       </div>
 
       {/* Summary Stats for maintenance */}
@@ -443,9 +421,7 @@ const Dashboard = () => {
             <Calendar size={24} className="text-indigo-600" />
           </div>
           <div>
-            <p className="text-sm text-gray-500 font-medium">
-              Total Tasks
-            </p>
+            <p className="text-sm text-gray-500 font-medium">Total Tasks</p>
             <h3 className="text-2xl font-bold text-gray-800">
               {maintenanceTasks?.length}
             </h3>
@@ -521,12 +497,7 @@ const Dashboard = () => {
             </h3>
           </div>
         </div>
-
       </div>
-
-
-
-
 
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
