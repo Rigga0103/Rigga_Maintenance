@@ -142,6 +142,8 @@ const mockTask = {
 
 const TaskDetails = () => {
   const { user } = useAuthStore();
+  const userRole = user?.role || "user";
+
   const { taskNo, serialNo, taskType } = useParams();
   const [allRelatedTasks, setAllRelatedTasks] = useState([]);
   const [machineName, setMachineName] = useState("");
@@ -216,23 +218,14 @@ const TaskDetails = () => {
       // Frontend filtering for additional security
       let userFilteredData = formattedData;
 
-      console.log(`👤 User role: ${user?.role}, Username: ${user?.username}`);
-
       if (user?.role === "user") {
         userFilteredData = formattedData.filter(
           (task) =>
             task["Doer Name"]?.toLowerCase() === user.username?.toLowerCase()
         );
-        console.log(
-          `🔒 User filtering: ${formattedData.length} → ${userFilteredData.length} records`
-        );
       } else if (user?.role === "admin") {
         userFilteredData = formattedData;
-        console.log(
-          `🔓 Admin access: showing all ${formattedData.length} records`
-        );
       } else {
-        console.log(`⚠️ Unknown role: ${user?.role}, showing all records`);
         userFilteredData = formattedData;
       }
 
@@ -803,6 +796,9 @@ const TaskDetails = () => {
     const today = new Date();
 
     const todaysTasks = allRelatedTasks.filter((task) => {
+      if (userRole === "admin") {
+        return true; // All tasks for admin
+      }
       const taskDate = new Date(task["Task Start Date"]);
       return (
         taskDate.getDate() === today.getDate() &&
@@ -960,17 +956,20 @@ const TaskDetails = () => {
                         <th className="border px-4 py-3 text-left font-medium text-gray-700">
                           Description
                         </th>
-                        <th className="border px-4 py-3 text-left font-medium text-gray-700">
+                        {/* <th className="border px-4 py-3 text-left font-medium text-gray-700">
                           Task Sound Test
                         </th>
                         <th className="border px-4 py-3 text-left font-medium text-gray-700">
                           Task Temperature
-                        </th>
+                        </th> */}
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
                       {pendingTasks
                         .filter((pendingTask) => {
+                          if (userRole === "admin") {
+                            return true; // Show all tasks for admin
+                          }
                           // Filter to show only tasks with today's date
                           const taskDate = new Date(
                             pendingTask["Task Start Date"]
@@ -1002,7 +1001,7 @@ const TaskDetails = () => {
                                 {pendingTask["Description"]}
                               </div>
                             </td>
-                            <td className="border px-4 py-3 text-center">
+                            {/* <td className="border px-4 py-3 text-center">
                               <span
                                 className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
                                   pendingTask["Need Sound Test"] === "Yes"
@@ -1027,13 +1026,17 @@ const TaskDetails = () => {
                                   ? "Yes"
                                   : "No"}
                               </span>
-                            </td>
+                            </td> */}
                           </tr>
                         ))}
                     </tbody>
                   </table>
 
                   {pendingTasks.filter((pendingTask) => {
+                    if (userRole === "admin") {
+                      return true;
+                    }
+
                     const taskDate = new Date(pendingTask["Task Start Date"]);
                     const today = new Date();
 
@@ -1133,6 +1136,9 @@ const TaskDetails = () => {
                     <tbody className="bg-white divide-y divide-gray-200">
                       {allRelatedTasks
                         .filter((task) => {
+                          if (userRole === "admin") {
+                            return true;
+                          }
                           // Filter to show only tasks with today's date
                           const taskDate = new Date(task["Task Start Date"]);
                           const today = new Date();
@@ -1470,6 +1476,9 @@ const TaskDetails = () => {
                   </table>
 
                   {allRelatedTasks.filter((task) => {
+                    if (userRole === "admin") {
+                      return true;
+                    }
                     const taskDate = new Date(task["Task Start Date"]);
                     const today = new Date();
 
