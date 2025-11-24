@@ -155,7 +155,7 @@ const TaskDetails = () => {
   const [imageFiles, setImageFiles] = useState({});
   const [submittingTasks, setSubmittingTasks] = useState({});
   const [task] = useState(mockTask);
-  const [activeTab, setActiveTab] = useState("details");
+  const [activeTab, setActiveTab] = useState("checklist");
   const [commentText, setCommentText] = useState("");
   const [showUpdateForm, setShowUpdateForm] = useState(false);
   const [updateStatus, setUpdateStatus] = useState(task.status);
@@ -828,13 +828,6 @@ const TaskDetails = () => {
           <ChevronLeft size={20} />
           <span>Back to Tasks</span>
         </Link>
-        <h1 className="text-2xl font-bold text-gray-800 flex-1">
-          {task.type} - {task.machineName}
-        </h1>
-        {/* <div className="flex items-center space-x-2">
-          {getStatusBadge(task.status)}
-          {getPriorityBadge(task.priority)}
-        </div> */}
       </div>
 
       <div className="bg-white rounded-lg shadow overflow-hidden">
@@ -873,18 +866,6 @@ const TaskDetails = () => {
 
         <div className="border-b border-gray-200">
           <nav className="flex flex-wrap sm:flex-nowrap -mb-px overflow-x-auto">
-            {/* Description */}
-            <button
-              className={`flex items-center py-3 px-4 sm:py-4 sm:px-6 font-medium text-sm border-b-2 whitespace-nowrap ${
-                activeTab === "details"
-                  ? "border-indigo-500 text-indigo-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-              }`}
-              onClick={() => setActiveTab("details")}
-            >
-              <FileText size={16} className="mr-2" />
-              Description
-            </button>
 
             {/* Checklist */}
             <button
@@ -896,7 +877,7 @@ const TaskDetails = () => {
               onClick={() => setActiveTab("checklist")}
             >
               <CheckCircle size={16} className="mr-2" />
-              Checklist
+              Pending
             </button>
 
             {/* History */}
@@ -909,11 +890,26 @@ const TaskDetails = () => {
               onClick={() => setActiveTab("history")}
             >
               <Clock size={16} className="mr-2" />
-              History
+              Completed
             </button>
 
-            {/* Documents */}
+            {/* Description */}
             <button
+              className={`flex items-center py-3 px-4 sm:py-4 sm:px-6 font-medium text-sm border-b-2 whitespace-nowrap ${
+                activeTab === "details"
+                  ? "border-indigo-500 text-indigo-600"
+                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+              }`}
+              onClick={() => setActiveTab("details")}
+            >
+              <FileText size={16} className="mr-2" />
+              Task List
+            </button>
+
+            
+
+            {/* Documents */}
+            {/* <button
               className={`flex items-center py-3 px-4 sm:py-4 sm:px-6 font-medium text-sm border-b-2 whitespace-nowrap ${
                 activeTab === "documents"
                   ? "border-indigo-500 text-indigo-600"
@@ -923,7 +919,7 @@ const TaskDetails = () => {
             >
               <Paperclip size={16} className="mr-2" />
               Documents
-            </button>
+            </button> */}
           </nav>
         </div>
 
@@ -954,14 +950,11 @@ const TaskDetails = () => {
                           Task Date
                         </th>
                         <th className="border px-4 py-3 text-left font-medium text-gray-700">
-                          Description
-                        </th>
-                        {/* <th className="border px-4 py-3 text-left font-medium text-gray-700">
-                          Task Sound Test
+                          Given By
                         </th>
                         <th className="border px-4 py-3 text-left font-medium text-gray-700">
-                          Task Temperature
-                        </th> */}
+                          Frequency
+                        </th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
@@ -1001,32 +994,17 @@ const TaskDetails = () => {
                                 {pendingTask["Description"]}
                               </div>
                             </td>
-                            {/* <td className="border px-4 py-3 text-center">
-                              <span
-                                className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                                  pendingTask["Need Sound Test"] === "Yes"
-                                    ? "bg-green-100 text-green-800"
-                                    : "bg-gray-100 text-gray-800"
-                                }`}
-                              >
-                                {pendingTask["Need Sound Test"] === "Yes"
-                                  ? "Yes"
-                                  : "No"}
-                              </span>
+
+                            <td className="border px-4 py-3 text-gray-700 max-w-md">
+                              <div className="line-clamp-3 break-words">
+                                {pendingTask["Frequency"]}
+                              </div>
                             </td>
-                            <td className="border px-4 py-3 text-center">
-                              <span
-                                className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                                  pendingTask["Temperature"] === "Yes"
-                                    ? "bg-blue-100 text-blue-800"
-                                    : "bg-gray-100 text-gray-800"
-                                }`}
-                              >
-                                {pendingTask["Temperature"] === "Yes"
-                                  ? "Yes"
-                                  : "No"}
-                              </span>
-                            </td> */}
+                            <td className="border px-4 py-3 text-gray-700 max-w-md">
+                              <div className="line-clamp-3 break-words">
+                                {pendingTask["Given By"]}
+                              </div>
+                            </td>
                           </tr>
                         ))}
                     </tbody>
@@ -1551,6 +1529,17 @@ const TaskDetails = () => {
                               <span className="text-blue-600">
                                 ({task["Description"]})
                               </span>
+                            </div>
+                            <div className="text-sm bg-gray-50 rounded">
+                              Uploaded File:-{" "}
+                              <a
+                                href={task["Image Link"]}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-indigo-600 hover:text-indigo-900"
+                              >
+                                Download
+                              </a>
                             </div>
                           </div>
                         </li>
