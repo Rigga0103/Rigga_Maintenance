@@ -866,7 +866,6 @@ const TaskDetails = () => {
 
         <div className="border-b border-gray-200">
           <nav className="flex flex-wrap sm:flex-nowrap -mb-px overflow-x-auto">
-
             {/* Checklist */}
             <button
               className={`flex items-center py-3 px-4 sm:py-4 sm:px-6 font-medium text-sm border-b-2 whitespace-nowrap ${
@@ -905,8 +904,6 @@ const TaskDetails = () => {
               <FileText size={16} className="mr-2" />
               Task List
             </button>
-
-            
 
             {/* Documents */}
             {/* <button
@@ -947,9 +944,6 @@ const TaskDetails = () => {
                           Task No
                         </th>
                         <th className="border px-4 py-3 text-left font-medium text-gray-700">
-                          Task Date
-                        </th>
-                        <th className="border px-4 py-3 text-left font-medium text-gray-700">
                           Given By
                         </th>
                         <th className="border px-4 py-3 text-left font-medium text-gray-700">
@@ -960,39 +954,37 @@ const TaskDetails = () => {
                     <tbody className="bg-white divide-y divide-gray-200">
                       {pendingTasks
                         .filter((pendingTask) => {
-                          if (userRole === "admin") {
-                            return true; // Show all tasks for admin
-                          }
-                          // Filter to show only tasks with today's date
                           const taskDate = new Date(
                             pendingTask["Task Start Date"]
                           );
                           const today = new Date();
+                          today.setHours(0, 0, 0, 0);
+                          taskDate.setHours(0, 0, 0, 0);
 
-                          return (
-                            taskDate.getDate() === today.getDate() &&
-                            taskDate.getMonth() === today.getMonth() &&
-                            taskDate.getFullYear() === today.getFullYear()
-                          );
+                          if (userRole === "admin") {
+                            // Show only overdue and current date tasks (not upcoming)
+                            return taskDate <= today;
+                          }
+
+                          // For users: show tasks till current date
+                          return taskDate <= today;
                         })
+                        .reduce((acc, task) => {
+                          const key = `${task["Machine Name"]}-${task["Frequency"]}`;
+                          if (
+                            !acc.find(
+                              (t) =>
+                                `${t["Machine Name"]}-${t["Frequency"]}` === key
+                            )
+                          ) {
+                            acc.push(task);
+                          }
+                          return acc;
+                        }, [])
                         .map((pendingTask, indx) => (
                           <tr key={indx} className="hover:bg-gray-50">
                             <td className="border px-4 py-3 font-medium text-blue-600">
                               {pendingTask["Task No"]}
-                            </td>
-                            <td className="border px-4 py-3 text-gray-900">
-                              {new Date(
-                                pendingTask["Task Start Date"]
-                              ).toLocaleDateString("en-IN", {
-                                year: "numeric",
-                                month: "short",
-                                day: "numeric",
-                              })}
-                            </td>
-                            <td className="border px-4 py-3 text-gray-700 max-w-md">
-                              <div className="line-clamp-3 break-words">
-                                {pendingTask["Description"]}
-                              </div>
                             </td>
 
                             <td className="border px-4 py-3 text-gray-700 max-w-md">
@@ -1011,18 +1003,13 @@ const TaskDetails = () => {
                   </table>
 
                   {pendingTasks.filter((pendingTask) => {
-                    if (userRole === "admin") {
-                      return true;
-                    }
-
                     const taskDate = new Date(pendingTask["Task Start Date"]);
                     const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    taskDate.setHours(0, 0, 0, 0);
 
-                    return (
-                      taskDate.getDate() === today.getDate() &&
-                      taskDate.getMonth() === today.getMonth() &&
-                      taskDate.getFullYear() === today.getFullYear()
-                    );
+                    // Same logic as the table filter above
+                    return taskDate <= today;
                   }).length === 0 && (
                     <div className="text-center py-8 text-gray-500">
                       No tasks found for today.
@@ -1120,12 +1107,10 @@ const TaskDetails = () => {
                           // Filter to show only tasks with today's date
                           const taskDate = new Date(task["Task Start Date"]);
                           const today = new Date();
+                          today.setHours(0, 0, 0, 0);
+                          taskDate.setHours(0, 0, 0, 0);
 
-                          return (
-                            taskDate.getDate() === today.getDate() &&
-                            taskDate.getMonth() === today.getMonth() &&
-                            taskDate.getFullYear() === today.getFullYear()
-                          );
+                          return taskDate <= today;
                         })
                         .map((task) => {
                           const taskNo = task["Task No"];
@@ -1486,64 +1471,76 @@ const TaskDetails = () => {
                     <div className="absolute top-0 bottom-0 left-3.5 w-0.5 bg-gray-200"></div>
 
                     <ul className="space-y-6">
-                      {[...completedTasks].reverse().map((task) => (
-                        <li key={task["Task No"]} className="relative pl-10">
-                          <div className="absolute left-0 top-1.5 h-7 w-7 rounded-full border-2 border-indigo-500 bg-white flex items-center justify-center">
-                            <div className="h-3 w-3 rounded-full bg-indigo-500"></div>
-                          </div>
-                          <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-                            <div className="flex justify-between items-start">
-                              <div className="font-medium">
-                                {task["Task Type"]} completed{" "}
-                                <span className="text-blue-600">
-                                  ({task["Task No"]})
-                                </span>
-                              </div>
-                              <div className="text-sm text-gray-500 mt-1">
-                                Completed by:{" "}
-                                <span className="text-blue-600">
-                                  ({task["Doer Name"]})
-                                </span>
-                              </div>
-                              <div className="text-sm text-gray-500 flex gap-10">
-                                <h1 className="text-green-600 font-bold">
-                                  {new Date(
-                                    task["Task Start Date"]
-                                  ).toLocaleDateString()}
-                                </h1>
-                                <h1 className="text-red-600 font-bold">
-                                  {new Date(
-                                    task["Actual Date"]
-                                  ).toLocaleDateString()}
-                                </h1>
-                              </div>
-                            </div>
+                      {[...completedTasks]
+                        .reverse()
+                        .filter((task) => {
+                          if (userRole === "admin") return true;
 
-                            {task["Remarks"] && (
-                              <div className="text-sm bg-gray-50 rounded">
-                                Remarks: {task["Remarks"]}
+                          const actualDate = new Date(task["Actual Date"]);
+                          const today = new Date();
+                          today.setHours(0, 0, 0, 0);
+                          actualDate.setHours(0, 0, 0, 0);
+
+                          return actualDate <= today;
+                        })
+                        .map((task) => (
+                          <li key={task["Task No"]} className="relative pl-10">
+                            <div className="absolute left-0 top-1.5 h-7 w-7 rounded-full border-2 border-indigo-500 bg-white flex items-center justify-center">
+                              <div className="h-3 w-3 rounded-full bg-indigo-500"></div>
+                            </div>
+                            <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                              <div className="flex justify-between items-start">
+                                <div className="font-medium">
+                                  {task["Task Type"]} completed{" "}
+                                  <span className="text-blue-600">
+                                    ({task["Task No"]})
+                                  </span>
+                                </div>
+                                <div className="text-sm text-gray-500 mt-1">
+                                  Completed by:{" "}
+                                  <span className="text-blue-600">
+                                    ({task["Doer Name"]})
+                                  </span>
+                                </div>
+                                <div className="text-sm text-gray-500 flex gap-10">
+                                  <h1 className="text-green-600 font-bold">
+                                    {new Date(
+                                      task["Task Start Date"]
+                                    ).toLocaleDateString()}
+                                  </h1>
+                                  <h1 className="text-red-600 font-bold">
+                                    {new Date(
+                                      task["Actual Date"]
+                                    ).toLocaleDateString()}
+                                  </h1>
+                                </div>
                               </div>
-                            )}
-                            <div className="text-sm bg-gray-50 rounded">
-                              Description:-{" "}
-                              <span className="text-blue-600">
-                                ({task["Description"]})
-                              </span>
+
+                              {task["Remarks"] && (
+                                <div className="text-sm bg-gray-50 rounded">
+                                  Remarks: {task["Remarks"]}
+                                </div>
+                              )}
+                              <div className="text-sm bg-gray-50 rounded">
+                                Description:-{" "}
+                                <span className="text-blue-600">
+                                  ({task["Description"]})
+                                </span>
+                              </div>
+                              <div className="text-sm bg-gray-50 rounded">
+                                Uploaded File:-{" "}
+                                <a
+                                  href={task["Image Link"]}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-indigo-600 hover:text-indigo-900"
+                                >
+                                  Download
+                                </a>
+                              </div>
                             </div>
-                            <div className="text-sm bg-gray-50 rounded">
-                              Uploaded File:-{" "}
-                              <a
-                                href={task["Image Link"]}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-indigo-600 hover:text-indigo-900"
-                              >
-                                Download
-                              </a>
-                            </div>
-                          </div>
-                        </li>
-                      ))}
+                          </li>
+                        ))}
                     </ul>
                   </div>
                 </div>
